@@ -75,7 +75,7 @@ class App:
                 node = NodeInfo.from_path(path)
                 if node is not None:
                     if node.node_type == NodeType.file:
-                        handle_file(node)
+                        handler(node, **kwargs)
                     elif node.node_type == NodeType.dir:
                         handle_dir(node)
                 else:
