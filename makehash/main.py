@@ -68,7 +68,7 @@ class App:
                 if item.node_type == NodeType.file:
                     handler(item, **kwargs)
                 elif item.node_type == NodeType.dir:
-                    handler(item, **kwargs)
+                    handle_dir(item)
 
         if paths:
             for path in paths:
