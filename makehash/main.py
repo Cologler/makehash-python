@@ -34,8 +34,8 @@ def verify_file(f: FileInfo):
         click.echo('Verifing {}... '.format(
             click.style(str(f.path), fg='blue')
         ))
-        click.echo('       - ', nl=False)
     real_hash_value, = f.get_file_hash(hash_type)
+    click.echo('       - ', nl=False)
     if real_hash_value == hash_value:
         click.echo(click.style("Ok", fg="green") + '.')
     else:
