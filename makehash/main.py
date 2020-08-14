@@ -14,12 +14,23 @@ import click
 from click_anno import click_app
 from click_anno.types import flag
 from fsoopify import NodeInfo, NodeType, FileInfo, DirectoryInfo
+from alive_progress import alive_bar
+from alive_progress.core.utils import clear_traces
 
 EXTENSION_NAME = '.hash'
 ACCEPT_HASH_TYPES = ('sha1', 'md5')
 
 def get_checksum_file(f: FileInfo) -> FileInfo:
     return FileInfo(f.path + EXTENSION_NAME)
+
+def get_hash_value(f: FileInfo, hash_type: str):
+    with f.get_hasher(hash_type) as hasher:
+        last = 0
+        with alive_bar(total=hasher.total_size) as bar:
+            while hasher.read_block():
+                bar(incr=hasher.total_read-last)
+                last = hasher.total_read
+        return hasher.result[0]
 
 def verify_file(f: FileInfo):
     hash_file = get_checksum_file(f)
@@ -49,7 +60,7 @@ def verify_file(f: FileInfo):
     click.echo('Verifing {}... '.format(
         click.style(str(f.path), fg='blue')
     ))
-    real_hash_value, = f.get_file_hash(hash_type)
+    real_hash_value = get_hash_value(f, hash_type)
     click.echo('       - ', nl=False)
     if real_hash_value == hash_value:
         click.echo(click.style("Ok", fg="green") + '.')
@@ -60,17 +71,20 @@ def create_checksum_file(f: FileInfo, skip_exists: bool):
     hash_file = get_checksum_file(f)
 
     if skip_exists and hash_file.is_file():
+        click.echo('Skiped {} by checksum file exists.'.format(
+            click.style(str(f.path), fg='bright_blue')
+        ), nl=True)
         return
 
     hash_type = ACCEPT_HASH_TYPES[0]
-    click.echo('Computing checksum for {}... '.format(
+    click.echo('Computing checksum for {}...'.format(
             click.style(str(f.path), fg='bright_blue')
-        ), nl=False)
-    hash_value, = f.get_file_hash(hash_type)
+        ), nl=True)
+
+    hash_value = get_hash_value(f, hash_type)
     data = {}
     data[hash_type] = hash_value
     hash_file.dump(data, 'json')
-    click.echo(click.style("Done.", fg="green"))
 
 @click_app
 class App:
@@ -102,7 +116,7 @@ class App:
             if collected_files:
                 click.echo('Found {} files.'.format(
                     click.style(str(len(collected_files)), fg='bright_blue')
-                ), nl=False)
+                ))
             else:
                 click.echo(click.style("Path is required", fg="yellow"))
         else:

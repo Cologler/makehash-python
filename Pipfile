@@ -10,6 +10,7 @@ setupmeta-builder = "*"
 fsoopify = "*"
 click-anno = "*"
 colorama = "*"
+alive-progress = "*"
 
 [requires]
 python_version = "3.8"
