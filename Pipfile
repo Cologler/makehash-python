@@ -5,6 +5,7 @@ verify_ssl = true
 
 [dev-packages]
 setupmeta-builder = "*"
+wheel = "*"
 
 [packages]
 fsoopify = "*"
