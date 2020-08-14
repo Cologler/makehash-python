@@ -25,11 +25,10 @@ def get_checksum_file(f: FileInfo) -> FileInfo:
 
 def get_hash_value(f: FileInfo, hash_type: str):
     with f.get_hasher(hash_type) as hasher:
-        last = 0
-        with alive_bar(total=hasher.total_size) as bar:
+        _ = hasher.total_size # a bug in fsoopify
+        with alive_bar(manual=True) as bar:
             while hasher.read_block():
-                bar(incr=hasher.total_read-last)
-                last = hasher.total_read
+                bar(hasher.progress)
         return hasher.result[0]
 
 def verify_file(f: FileInfo):
@@ -61,7 +60,7 @@ def verify_file(f: FileInfo):
         click.style(str(f.path), fg='blue')
     ))
     real_hash_value = get_hash_value(f, hash_type)
-    click.echo('       - ', nl=False)
+    click.echo('Result : ', nl=False)
     if real_hash_value == hash_value:
         click.echo(click.style("Ok", fg="green") + '.')
     else:
