@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "79fd5243c499b1d98f3816ed0226948eb8682ddf1542bb568194a74cd7ccdb88"
+            "sha256": "58ff4f56017095e91321b4374e4f4c5234a10c33c2148624362d94840d45bd86"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -57,11 +57,11 @@
         },
         "fsoopify": {
             "hashes": [
-                "sha256:a6200e86e1e49a70608072d5e35d4d00e1ab0005c0570aeb98b393cd6196befb",
-                "sha256:bd7104e8d9fafc88231eeee09b85853eba125e458550b8d34bcc664fd5d38e99"
+                "sha256:398aeead87839b0029eb705f7f7f39b7f54d23921fe55b931a0feb03ecc19c50",
+                "sha256:50f2126e93faaad7837a449f76ecd8f1fd1d591a74ec83e2cce41d012023aea2"
             ],
             "index": "pypi",
-            "version": "==0.4.1"
+            "version": "==0.4.2"
         },
         "portalocker": {
             "hashes": [
@@ -171,11 +171,11 @@
         },
         "fsoopify": {
             "hashes": [
-                "sha256:a6200e86e1e49a70608072d5e35d4d00e1ab0005c0570aeb98b393cd6196befb",
-                "sha256:bd7104e8d9fafc88231eeee09b85853eba125e458550b8d34bcc664fd5d38e99"
+                "sha256:398aeead87839b0029eb705f7f7f39b7f54d23921fe55b931a0feb03ecc19c50",
+                "sha256:50f2126e93faaad7837a449f76ecd8f1fd1d591a74ec83e2cce41d012023aea2"
             ],
             "index": "pypi",
-            "version": "==0.4.1"
+            "version": "==0.4.2"
         },
         "html5lib": {
             "hashes": [
@@ -442,6 +442,14 @@
                 "sha256:b36a1c245f2d304965eb4e0a82848379241dc04b865afcc4aab16748587e1923"
             ],
             "version": "==0.5.1"
+        },
+        "wheel": {
+            "hashes": [
+                "sha256:625e645aae0706ad09690bded523196a065fbcf9afcdb2d713b59e01ef8699c0",
+                "sha256:64a0d73747636637479b8b8741f9304bee7a568c80e4029eeb9529ef134b471d"
+            ],
+            "index": "pypi",
+            "version": "==0.35.0"
         }
     }
 }

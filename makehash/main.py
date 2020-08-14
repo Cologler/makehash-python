@@ -25,7 +25,6 @@ def get_checksum_file(f: FileInfo) -> FileInfo:
 
 def get_hash_value(f: FileInfo, hash_type: str):
     with f.get_hasher(hash_type) as hasher:
-        _ = hasher.total_size # a bug in fsoopify
         with alive_bar(manual=True) as bar:
             while hasher.read_block():
                 bar(hasher.progress)
