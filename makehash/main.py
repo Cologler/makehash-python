@@ -101,7 +101,7 @@ class App:
                 node = NodeInfo.from_path(path)
                 if node is not None:
                     if node.node_type == NodeType.file:
-                        collected_files.append(item)
+                        collected_files.append(node)
                     elif node.node_type == NodeType.dir:
                         collect_from_dir(node)
                 else:
