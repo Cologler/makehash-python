@@ -6,5 +6,11 @@
 # ----------
 
 def makehash():
-    from .main import main
-    main()
+    from click_anno import command
+    from .main import make_hash
+    command(make_hash)()
+
+def verifyhash():
+    from click_anno import command
+    from .main import verify_file
+    command(verify_file)()
