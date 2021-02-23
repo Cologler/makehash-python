@@ -12,5 +12,5 @@ def makehash():
 
 def verifyhash():
     from click_anno import command
-    from .main import verify_file
-    command(verify_file)()
+    from .main import verify_hash
+    command(verify_hash)()

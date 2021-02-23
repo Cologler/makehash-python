@@ -193,7 +193,7 @@ def _collect_files(paths: list, skip_hash_file: bool) -> List[FileInfo]:
 
     return collected_files
 
-def make_hash(self, *paths, skip_exists: flag=True, skip_hash_file: flag=True):
+def make_hash(*paths, skip_exists: flag=True, skip_hash_file: flag=True):
     'create *.hash files'
     collected_files = _collect_files(paths, skip_hash_file)
     accessor = HashFileHashAccessor()
@@ -201,7 +201,7 @@ def make_hash(self, *paths, skip_exists: flag=True, skip_hash_file: flag=True):
         for f in collected_files:
             create_checksum_file(f, skip_exists=skip_exists, accessor=accessor)
 
-def verify_hash(self, *paths, skip_hash_file: flag=True):
+def verify_hash(*paths, skip_hash_file: flag=True):
     'verify with *.hash files'
     collected_files = _collect_files(paths, skip_hash_file)
     accessor = None # HashFileHashAccessor()
@@ -211,8 +211,13 @@ def verify_hash(self, *paths, skip_hash_file: flag=True):
 
 @click_app
 class App:
-    make = make_hash
-    verify = verify_hash
+    def make(self, *paths, skip_exists: flag=True, skip_hash_file: flag=True):
+        'create *.hash files'
+        make_hash(*paths, skip_exists, skip_hash_file)
+
+    def verify(self, *paths, skip_hash_file: flag=True):
+        'verify with *.hash files'
+        verify_hash(*paths, skip_hash_file)
 
 def main(argv=None):
     if argv is None:
