@@ -9,6 +9,7 @@ from typing import *
 import os
 import sys
 import traceback
+import re
 
 import click
 from click_anno import click_app
@@ -53,8 +54,27 @@ class HashFileHashAccessor(IHashAccessor):
         hash_file = self._get_checksum_file(f)
         hash_file.dump(h, 'json')
 
-def get_checksum_file(f: FileInfo) -> FileInfo:
-    return FileInfo(f.path + EXTENSION_NAME)
+
+class Crc32SuffixHashAccessor(IHashAccessor):
+    REGEX = re.compile(r'\((?P<crc32>[0-9a-f]{8})\)$', re.I)
+
+    @classmethod
+    def _try_read_crc32(cls, f: FileInfo) -> Optional[str]:
+        pure_name = str(f.path.name.pure_name)
+        match = cls.REGEX.search(pure_name)
+        if match:
+            return match.group('crc32')
+
+    def can_read(self, f: FileInfo) -> bool:
+        return self._try_read_crc32(f)
+
+    def read(self, f: FileInfo) -> Optional[Dict[str, str]]:
+        crc32 = self._try_read_crc32(f)
+        return dict(crc32=crc32)
+
+    def write(self, f: FileInfo, h: Dict[str, str]):
+        raise NotImplementedError
+
 
 def _get_hash_value(f: FileInfo, hash_names: List[str]) -> Dict[str, str]:
     r = {}
@@ -71,8 +91,20 @@ def _norm_hashvalue(val):
         return val.lower()
     return None
 
-def verify_file(f: FileInfo, accessor: IHashAccessor):
-    data = accessor.read(f)
+def verify_file(f: FileInfo, accessor: Optional[IHashAccessor]):
+    if accessor is None:
+        def iter_accessors():
+            yield HashFileHashAccessor()
+            yield Crc32SuffixHashAccessor()
+        accessors = iter_accessors()
+    else:
+        accessors = (accessor, )
+
+    data = None
+    for accessor in accessors:
+        data = accessor.read(f)
+        if data is not None:
+            break
     if data is None:
         if f.path.name.ext != EXTENSION_NAME:
             click.echo('Ignore {} by checksum not found.'.format(
@@ -172,7 +204,7 @@ def make_hash(self, *paths, skip_exists: flag=True, skip_hash_file: flag=True):
 def verify_hash(self, *paths, skip_hash_file: flag=True):
     'verify with *.hash files'
     collected_files = _collect_files(paths, skip_hash_file)
-    accessor = HashFileHashAccessor()
+    accessor = None # HashFileHashAccessor()
     if collected_files:
         for f in collected_files:
             verify_file(f, accessor=accessor)
