@@ -593,7 +593,7 @@ python-versions = "*"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "499f6246e6e1c9a25995516e5e8329fe89f77ead0a45c9bbeb158f443b2d522d"
+content-hash = "6ec97b17e449b83fca27d3ace4dd9167b000d0b46d7875978c30ad7a880244a1"
 
 [metadata.files]
 alive-progress = [
