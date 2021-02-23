@@ -84,58 +84,64 @@ def create_checksum_file(f: FileInfo, skip_exists: bool):
     data[hash_type] = hash_value
     hash_file.dump(data, 'json')
 
+def collect_files(self, paths: list, skip_hash_file: bool) -> List[FileInfo]:
+    '''
+    collect a files list
+    '''
+
+    collected_files: List[FileInfo] = []
+
+    def collect_from_dir(d: DirectoryInfo):
+        for item in d.list_items():
+            if item.node_type == NodeType.file:
+                collected_files.append(item)
+            elif item.node_type == NodeType.dir:
+                collect_from_dir(item)
+
+    if paths:
+        for path in paths:
+            node = NodeInfo.from_path(path)
+            if node is not None:
+                if node.node_type == NodeType.file:
+                    collected_files.append(node)
+                elif node.node_type == NodeType.dir:
+                    collect_from_dir(node)
+            else:
+                click.echo(f'Ignore {path} which is not a file or dir')
+
+        # ignore *.hash file
+        if skip_hash_file:
+            collected_files = [f for f in collected_files if f.path.name.ext != EXTENSION_NAME]
+
+        if collected_files:
+            click.echo('Found {} files.'.format(
+                click.style(str(len(collected_files)), fg='bright_blue')
+            ))
+        else:
+            click.echo(click.style("Path is required", fg="yellow"))
+    else:
+        click.echo(click.style("Path is required", fg="red"))
+
+    return collected_files
+
+def make_hash(self, *paths, skip_exists: flag=True, skip_hash_file: flag=True):
+    'create *.hash files'
+    collected_files = collect_files(paths, skip_hash_file)
+    if collected_files:
+        for f in collected_files:
+            create_checksum_file(f, skip_exists=skip_exists)
+
+def verify_hash(self, *paths, skip_hash_file: flag=True):
+    'verify with *.hash files'
+    collected_files = collect_files(paths, skip_hash_file)
+    if collected_files:
+        for f in collected_files:
+            verify_file(f)
+
 @click_app
 class App:
-    def _collected_files(self, paths: list, skip_hash_file: bool) -> List[FileInfo]:
-        collected_files: List[FileInfo] = []
-
-        def collect_from_dir(d: DirectoryInfo):
-            for item in d.list_items():
-                if item.node_type == NodeType.file:
-                    collected_files.append(item)
-                elif item.node_type == NodeType.dir:
-                    collect_from_dir(item)
-
-        if paths:
-            for path in paths:
-                node = NodeInfo.from_path(path)
-                if node is not None:
-                    if node.node_type == NodeType.file:
-                        collected_files.append(node)
-                    elif node.node_type == NodeType.dir:
-                        collect_from_dir(node)
-                else:
-                    click.echo(f'Ignore {path} which is not a file or dir')
-
-            # ignore *.hash file
-            if skip_hash_file:
-                collected_files = [f for f in collected_files if f.path.name.ext != EXTENSION_NAME]
-
-            if collected_files:
-                click.echo('Found {} files.'.format(
-                    click.style(str(len(collected_files)), fg='bright_blue')
-                ))
-            else:
-                click.echo(click.style("Path is required", fg="yellow"))
-        else:
-            click.echo(click.style("Path is required", fg="red"))
-
-        return collected_files
-
-    def make(self, *paths, skip_exists: flag=True, skip_hash_file: flag=True):
-        'create *.hash files'
-        collected_files = self._collected_files(paths, skip_hash_file)
-        if collected_files:
-            for f in collected_files:
-                create_checksum_file(f, skip_exists=skip_exists)
-
-    def verify(self, *paths, skip_hash_file: flag=True):
-        'verify with *.hash files'
-        collected_files = self._collected_files(paths, skip_hash_file)
-        if collected_files:
-            for f in collected_files:
-                verify_file(f)
-
+    make = make_hash
+    verify = verify_hash
 
 def main(argv=None):
     if argv is None:
