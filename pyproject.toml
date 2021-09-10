@@ -13,8 +13,6 @@ readme = "README.md"
   alive-progress = "*"
 
   [tool.poetry.dev-dependencies]
-  setupmeta-builder = "*"
-  wheel = "^0.36.2"
   pytest = "^6.2.5"
   pytest-cov = "^2.12.1"
   pyinvoke = "^1.0.4"
