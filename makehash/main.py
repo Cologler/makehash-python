@@ -16,7 +16,6 @@ from click_anno import click_app
 from click_anno.types import flag
 from fsoopify import NodeInfo, NodeType, FileInfo, DirectoryInfo, SerializeError
 from alive_progress import alive_bar
-from alive_progress.core.utils import clear_traces
 
 EXTENSION_NAME = '.hash'
 ACCEPT_HASH_TYPES = ('sha1', 'md5', 'crc32', 'sha256')
