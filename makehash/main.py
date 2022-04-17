@@ -20,7 +20,7 @@ from alive_progress import alive_bar
 EXTENSION_NAME = '.hash'
 ACCEPT_HASH_TYPES = ('sha1', 'md5', 'crc32', 'sha256')
 
-class IHashAccessor:
+class IHashValuesAccessor:
     def can_read(self, f: FileInfo) -> bool:
         raise NotImplementedError
 
@@ -30,7 +30,7 @@ class IHashAccessor:
     def write(self, f: FileInfo, h: Dict[str, str]):
         raise NotImplementedError
 
-class HashFileHashAccessor(IHashAccessor):
+class HashFileHashValuesAccessor(IHashValuesAccessor):
     @staticmethod
     def _get_checksum_file(f: FileInfo):
         return FileInfo(f.path + EXTENSION_NAME)
@@ -54,7 +54,7 @@ class HashFileHashAccessor(IHashAccessor):
         hash_file.dump(h, 'json')
 
 
-class Crc32SuffixHashAccessor(IHashAccessor):
+class Crc32SuffixHashValuesAccessor(IHashValuesAccessor):
     REGEX = re.compile(r'\((?P<crc32>[0-9a-f]{8})\)$', re.I)
 
     @classmethod
@@ -90,11 +90,11 @@ def _norm_hashvalue(val):
         return val.lower()
     return None
 
-def verify_file(f: FileInfo, accessor: Optional[IHashAccessor]):
+def verify_file(f: FileInfo, accessor: Optional[IHashValuesAccessor]):
     if accessor is None:
         def iter_accessors():
-            yield HashFileHashAccessor()
-            yield Crc32SuffixHashAccessor()
+            yield HashFileHashValuesAccessor()
+            yield Crc32SuffixHashValuesAccessor()
         accessors = iter_accessors()
     else:
         accessors = (accessor, )
@@ -135,7 +135,7 @@ def verify_file(f: FileInfo, accessor: Optional[IHashAccessor]):
     else:
         click.echo(click.style("Failed", fg="red") + '!')
 
-def create_checksum_file(f: FileInfo, skip_exists: bool, accessor: IHashAccessor):
+def create_checksum_file(f: FileInfo, skip_exists: bool, accessor: IHashValuesAccessor):
     if skip_exists and accessor.can_read(f):
         click.echo('Skiped {} by checksum exists.'.format(
             click.style(str(f.path), fg='bright_blue')
@@ -195,7 +195,7 @@ def _collect_files(paths: list, skip_hash_file: bool) -> List[FileInfo]:
 def make_hash(*paths, skip_exists: flag=True, skip_hash_file: flag=True):
     'create *.hash files'
     collected_files = _collect_files(paths, skip_hash_file)
-    accessor = HashFileHashAccessor()
+    accessor = HashFileHashValuesAccessor()
     if collected_files:
         for f in collected_files:
             create_checksum_file(f, skip_exists=skip_exists, accessor=accessor)
@@ -203,7 +203,7 @@ def make_hash(*paths, skip_exists: flag=True, skip_hash_file: flag=True):
 def verify_hash(*paths, skip_hash_file: flag=True):
     'verify with *.hash files'
     collected_files = _collect_files(paths, skip_hash_file)
-    accessor = None # HashFileHashAccessor()
+    accessor = None # HashFileHashValuesAccessor()
     if collected_files:
         for f in collected_files:
             verify_file(f, accessor=accessor)
