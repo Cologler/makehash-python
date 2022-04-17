@@ -90,7 +90,7 @@ def _norm_hashvalue(val):
         return val.lower()
     return None
 
-def verify_file(f: FileInfo, accessor: Optional[IHashValuesAccessor]):
+def verify_file(f: FileInfo, accessor: Optional[IHashValuesAccessor]) -> Optional[bool]:
     if accessor is None:
         def iter_accessors():
             yield HashFileHashValuesAccessor()
@@ -128,12 +128,15 @@ def verify_file(f: FileInfo, accessor: Optional[IHashValuesAccessor]):
     click.echo('Verifing {}... '.format(
         click.style(str(f.path), fg='blue')
     ))
+
     actual_hash_value = _get_hash_value(f, hash_names)
+    cmp_result = actual_hash_value == saved_hash_value
     click.echo('Result : ', nl=False)
     if actual_hash_value == saved_hash_value:
         click.echo(click.style("Ok", fg="green") + '.')
     else:
         click.echo(click.style("Failed", fg="red") + '!')
+    return cmp_result
 
 def create_checksum_file(f: FileInfo, skip_exists: bool, accessor: IHashValuesAccessor):
     if skip_exists and accessor.can_read(f):
@@ -205,18 +208,29 @@ def verify_hash(*paths, skip_hash_file: flag=True):
     collected_files = _collect_files(paths, skip_hash_file)
     accessor = None # HashFileHashValuesAccessor()
     if collected_files:
+        result = []
         for f in collected_files:
-            verify_file(f, accessor=accessor)
+            if (r := verify_file(f, accessor=accessor)) is not None:
+                result.append((f, r))
+        click.echo('total verified {} files, Ok: {}, Failed: {}.'.format(
+            click.style(len(result), fg='blue'),
+            click.style(len([r for r in result if r[1]]), fg='green'),
+            click.style(len([r for r in result if not r[1]]), fg='red')
+        ))
+        if any(faileds := [r[0] for r in result if not r[1]]):
+            click.echo('Failed files:')
+            for f in faileds:
+                click.echo(f'  {f.path}')
 
 @click_app
 class App:
     def make(self, *paths, skip_exists: flag=True, skip_hash_file: flag=True):
         'create *.hash files'
-        make_hash(*paths, skip_exists, skip_hash_file)
+        make_hash(*paths, skip_exists=skip_exists, skip_hash_file=skip_hash_file)
 
     def verify(self, *paths, skip_hash_file: flag=True):
         'verify with *.hash files'
-        verify_hash(*paths, skip_hash_file)
+        verify_hash(*paths, skip_hash_file=skip_hash_file)
 
 def main(argv=None):
     if argv is None:
